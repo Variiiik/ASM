@@ -40,10 +40,13 @@ router.post('/signin', async (req, res) => {
     );
 
     // Generate JWT token
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key';
+    const jwtExpiresIn = process.env.JWT_EXPIRES_IN || '7d';
+    
     const token = jwt.sign(
       { userId: user.id },
-      process.env.JWT_SECRET || 'fallback-secret-key',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+      jwtSecret,
+      { expiresIn: jwtExpiresIn }
     );
 
     res.json({

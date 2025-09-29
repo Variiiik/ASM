@@ -19,7 +19,8 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key') as any;
+    const jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key';
+    const decoded = jwt.verify(token, jwtSecret) as any;
     
     // Get user details from database
     const result = await pool.query(
