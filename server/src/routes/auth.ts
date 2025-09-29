@@ -128,4 +128,45 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+// Get current user (for token validation)
+router.get('/me', async (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    
+    // Get user details from database
+    const result = await pool.query(
+      'SELECT au.id, au.email, u.id as profile_id, u.full_name, u.role, u.phone FROM auth_users au LEFT JOIN users u ON au.id = u.user_id WHERE au.id = $1',
+      [payload.sub]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const userData = result.rows[0];
+    res.json({
+      user: {
+        id: userData.id,
+        email: userData.email,
+        profile: userData.profile_id ? {
+          id: userData.profile_id,
+          full_name: userData.full_name,
+          role: userData.role,
+          phone: userData.phone,
+          email: userData.email
+        } : null
+      }
+    });
+  } catch (error) {
+    return res.status(403).json({ error: 'Invalid token' });
+  }
+});
+
 export default router;

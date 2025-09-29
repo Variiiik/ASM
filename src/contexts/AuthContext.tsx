@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
 import { supabase, getCurrentUserProfile } from '../lib/supabase';
 import type { Database } from '../lib/database.types';
 
 type UserProfile = Database['public']['Tables']['users']['Row'];
+type User = {
+  id: string;
+  email: string;
+  profile?: UserProfile;
+};
 
 interface AuthContextType {
   user: User | null;
@@ -32,10 +36,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserProfile(session.user.id);
+        loadUserProfile(session.user);
       } else {
         setLoading(false);
       }
@@ -44,10 +48,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserProfile(session.user.id);
+        loadUserProfile(session.user);
       } else {
         setUserProfile(null);
         setLoading(false);
@@ -57,14 +61,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const loadUserProfile = async (userId: string) => {
+  const loadUserProfile = async (user: User) => {
     try {
-      const { data, error } = await getCurrentUserProfile();
-      if (error) {
-        console.error('Error loading user profile:', error);
-      } else {
-        setUserProfile(data);
-      }
+      // User profile is already included in the user object from backend
+      setUserProfile(user.profile || null);
     } catch (error) {
       console.error('Error loading user profile:', error);
     } finally {
