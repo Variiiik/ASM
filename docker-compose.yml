@@ -16,6 +16,11 @@ services:
       - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - auto_service_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # Backend API
   backend:
@@ -37,11 +42,13 @@ services:
     ports:
       - "3001:3001"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - ./server/uploads:/app/uploads
     networks:
       - auto_service_network
+    restart: unless-stopped
 
   # Frontend (Nginx serving built React app)
   frontend:
@@ -49,12 +56,15 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     container_name: auto_service_frontend
+    environment:
+      VITE_API_URL: http://localhost:3001/api
     ports:
       - "3000:80"
     depends_on:
       - backend
     networks:
       - auto_service_network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
