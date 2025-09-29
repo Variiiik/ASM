@@ -53,7 +53,7 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
       args:
-        - VITE_API_URL=http://localhost:3001/api
+        - VITE_API_URL=/api
     container_name: auto_service_frontend
     ports:
       - "3080:80"

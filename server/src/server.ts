@@ -34,8 +34,8 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/customers', customerRoutes);
+app.use('/auth', authRoutes);
+app.use('/customers', customerRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
