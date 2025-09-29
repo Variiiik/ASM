@@ -13,12 +13,9 @@ const JWT_SECRET: Secret = (() => {
 
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? "1h";
 
-const JWT_EXPIRES_IN: string | number | undefined =
-  process.env.JWT_EXPIRES_IN ?? "1h";
-
 export function issueToken(user: { id: string | number; role: string }) {
   const payload = { sub: String(user.id), role: user.role };
-  const options: SignOptions = { algorithm: "HS256", expiresIn: JWT_EXPIRES_IN };
+  const options: SignOptions = { algorithm: "HS256", expiresIn: JWT_EXPIRES_IN as string };
   return jwt.sign(payload, JWT_SECRET, options);
 }
 
