@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: auto_service_db
+    environment:
+      POSTGRES_DB: auto_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - auto_service_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: auto_service_backend
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: auto_service_db
+      DB_USER: postgres
+      DB_PASSWORD: password
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 7d
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    volumes:
+      - ./server/uploads:/app/uploads
+    networks:
+      - auto_service_network
+
+  # Frontend (Nginx serving built React app)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: auto_service_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - auto_service_network
+
+volumes:
+  postgres_data:
+
+networks:
+  auto_service_network:
+    driver: bridge
