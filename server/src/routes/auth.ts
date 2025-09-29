@@ -11,7 +11,9 @@ const JWT_SECRET: Secret = (() => {
   return v;
 })();
 
-const JWT_EXPIRES_IN: SignOptions["expiresIn"] =
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? "1h";
+
+const JWT_EXPIRES_IN: string | number | undefined =
   process.env.JWT_EXPIRES_IN ?? "1h";
 
 export function issueToken(user: { id: string | number; role: string }) {
