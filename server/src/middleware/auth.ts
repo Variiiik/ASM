@@ -1,12 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt, { Secret } from 'jsonwebtoken';
+import { jwtVerify } from 'jose';
 import pool from '../config/database';
 
-const JWT_SECRET: Secret = (() => {
-  const v = process.env.JWT_SECRET;
-  if (!v) throw new Error("JWT_SECRET missing");
-  return v;
-})();
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-fallback-secret-key'
+);
 
 export interface AuthRequest extends Request {
   user?: {
@@ -25,12 +23,12 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    const { payload } = await jwtVerify(token, JWT_SECRET);
     
     // Get user details from database
     const result = await pool.query(
       'SELECT id, user_id, email, full_name, role FROM users WHERE user_id = $1',
-      [decoded.sub]
+      [payload.sub]
     );
 
     if (result.rows.length === 0) {

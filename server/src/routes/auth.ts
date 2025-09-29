@@ -1,22 +1,24 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
-import jwt, { Secret, SignOptions } from 'jsonwebtoken';
+import { SignJWT, jwtVerify } from 'jose';
 import { v4 as uuidv4 } from 'uuid';
 import 'dotenv/config';
 import pool from '../config/database';
 
-const JWT_SECRET: Secret = (() => {
-  const v = process.env.JWT_SECRET;
-  if (!v) throw new Error("JWT_SECRET missing");
-  return v;
-})();
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'your-fallback-secret-key'
+);
 
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN ?? "1h";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-export function issueToken(user: { id: string | number; role: string }) {
-  const payload = { sub: String(user.id), role: user.role };
-  const options: SignOptions = { algorithm: "HS256", expiresIn: JWT_EXPIRES_IN as string };
-  return jwt.sign(payload, JWT_SECRET, options);
+export async function issueToken(user: { id: string | number; role: string }) {
+  const jwt = await new SignJWT({ sub: String(user.id), role: user.role })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRES_IN)
+    .sign(JWT_SECRET);
+  
+  return jwt;
 }
 
 const router = express.Router();
@@ -55,7 +57,7 @@ router.post('/signin', async (req, res) => {
     );
 
     // Generate JWT token
-    const token = issueToken({ id: user.id, role: profileResult.rows[0]?.role || 'user' });
+    const token = await issueToken({ id: user.id, role: profileResult.rows[0]?.role || 'user' });
 
     res.json({
       token,
