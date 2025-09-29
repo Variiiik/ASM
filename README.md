@@ -51,8 +51,12 @@ cp server/.env.example server/.env
 ### 3. Run Migrations and Seed Data
 
 ```bash
-npm run db:migrate
-npm run db:seed
+# Setup database (migrate + seed)
+npm run db:setup
+
+# Or run separately:
+# npm run db:migrate
+# npm run db:seed
 ```
 
 ### 4. Start Development Servers
