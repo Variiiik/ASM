@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Phone, Mail, MapPin, Edit2, Car } from 'lucide-react';
+import { Plus, Search, Phone, Mail, MapPin, CreditCard as Edit2, Car } from 'lucide-react';
 import { apiClient } from '../../lib/api';
 import CustomerForm from './CustomerForm';
 import type { Customer, Vehicle } from '../../lib/database.types';
