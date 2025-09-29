@@ -1,430 +1,98 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+// Database types for the auto service management system
+export interface Customer {
+  id: string;
+  name: string;
+  email?: string;
+  phone: string;
+  address?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
 
-export interface Database {
-  public: {
-    Tables: {
-      appointments: {
-        Row: {
-          appointment_date: string
-          assigned_to: string | null
-          created_at: string
-          customer_id: string
-          description: string | null
-          duration_minutes: number | null
-          id: string
-          status: string | null
-          title: string
-          updated_at: string
-          vehicle_id: string
-        }
-        Insert: {
-          appointment_date: string
-          assigned_to?: string | null
-          created_at?: string
-          customer_id: string
-          description?: string | null
-          duration_minutes?: number | null
-          id?: string
-          status?: string | null
-          title: string
-          updated_at?: string
-          vehicle_id: string
-        }
-        Update: {
-          appointment_date?: string
-          assigned_to?: string | null
-          created_at?: string
-          customer_id?: string
-          description?: string | null
-          duration_minutes?: number | null
-          id?: string
-          status?: string | null
-          title?: string
-          updated_at?: string
-          vehicle_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "appointments_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "appointments_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "appointments_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "vehicles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      customers: {
-        Row: {
-          address: string | null
-          created_at: string
-          email: string | null
-          id: string
-          name: string
-          notes: string | null
-          phone: string
-          updated_at: string
-        }
-        Insert: {
-          address?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          name: string
-          notes?: string | null
-          phone: string
-          updated_at?: string
-        }
-        Update: {
-          address?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          name?: string
-          notes?: string | null
-          phone?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      inventory: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          min_stock_level: number | null
-          name: string
-          sku: string
-          stock_quantity: number | null
-          unit_price: number | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          min_stock_level?: number | null
-          name: string
-          sku: string
-          stock_quantity?: number | null
-          unit_price?: number | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          min_stock_level?: number | null
-          name?: string
-          sku?: string
-          stock_quantity?: number | null
-          unit_price?: number | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      invoices: {
-        Row: {
-          created_at: string
-          customer_id: string
-          due_date: string | null
-          id: string
-          invoice_number: string
-          issued_date: string | null
-          notes: string | null
-          paid_date: string | null
-          status: string | null
-          subtotal: number | null
-          tax_amount: number | null
-          tax_rate: number | null
-          total_amount: number | null
-          updated_at: string
-          work_order_id: string
-        }
-        Insert: {
-          created_at?: string
-          customer_id: string
-          due_date?: string | null
-          id?: string
-          invoice_number: string
-          issued_date?: string | null
-          notes?: string | null
-          paid_date?: string | null
-          status?: string | null
-          subtotal?: number | null
-          tax_amount?: number | null
-          tax_rate?: number | null
-          total_amount?: number | null
-          updated_at?: string
-          work_order_id: string
-        }
-        Update: {
-          created_at?: string
-          customer_id?: string
-          due_date?: string | null
-          id?: string
-          invoice_number?: string
-          issued_date?: string | null
-          notes?: string | null
-          paid_date?: string | null
-          status?: string | null
-          subtotal?: number | null
-          tax_amount?: number | null
-          tax_rate?: number | null
-          total_amount?: number | null
-          updated_at?: string
-          work_order_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoices_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invoices_work_order_id_fkey"
-            columns: ["work_order_id"]
-            isOneToOne: false
-            referencedRelation: "work_orders"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      users: {
-        Row: {
-          created_at: string
-          email: string
-          full_name: string
-          id: string
-          phone: string | null
-          role: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          full_name: string
-          id?: string
-          phone?: string | null
-          role: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          full_name?: string
-          id?: string
-          phone?: string | null
-          role?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      vehicles: {
-        Row: {
-          color: string | null
-          created_at: string
-          customer_id: string
-          id: string
-          license_plate: string | null
-          make: string
-          model: string
-          notes: string | null
-          updated_at: string
-          vin: string | null
-          year: number
-        }
-        Insert: {
-          color?: string | null
-          created_at?: string
-          customer_id: string
-          id?: string
-          license_plate?: string | null
-          make: string
-          model: string
-          notes?: string | null
-          updated_at?: string
-          vin?: string | null
-          year: number
-        }
-        Update: {
-          color?: string | null
-          created_at?: string
-          customer_id?: string
-          id?: string
-          license_plate?: string | null
-          make?: string
-          model?: string
-          notes?: string | null
-          updated_at?: string
-          vin?: string | null
-          year?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vehicles_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      work_order_items: {
-        Row: {
-          created_at: string
-          id: string
-          inventory_id: string | null
-          quantity: number
-          total_price: number | null
-          unit_price: number
-          work_order_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          inventory_id?: string | null
-          quantity?: number
-          unit_price: number
-          work_order_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          inventory_id?: string | null
-          quantity?: number
-          unit_price?: number
-          work_order_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "work_order_items_inventory_id_fkey"
-            columns: ["inventory_id"]
-            isOneToOne: false
-            referencedRelation: "inventory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "work_order_items_work_order_id_fkey"
-            columns: ["work_order_id"]
-            isOneToOne: false
-            referencedRelation: "work_orders"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      work_orders: {
-        Row: {
-          actual_hours: number | null
-          assigned_to: string | null
-          completed_at: string | null
-          created_at: string
-          customer_id: string
-          description: string | null
-          estimated_completion: string | null
-          estimated_hours: number | null
-          id: string
-          labor_rate: number | null
-          priority: string | null
-          status: string
-          title: string
-          updated_at: string
-          vehicle_id: string
-        }
-        Insert: {
-          actual_hours?: number | null
-          assigned_to?: string | null
-          completed_at?: string | null
-          created_at?: string
-          customer_id: string
-          description?: string | null
-          estimated_completion?: string | null
-          estimated_hours?: number | null
-          id?: string
-          labor_rate?: number | null
-          priority?: string | null
-          status?: string
-          title: string
-          updated_at?: string
-          vehicle_id: string
-        }
-        Update: {
-          actual_hours?: number | null
-          assigned_to?: string | null
-          completed_at?: string | null
-          created_at?: string
-          customer_id?: string
-          description?: string | null
-          estimated_completion?: string | null
-          estimated_hours?: number | null
-          id?: string
-          labor_rate?: number | null
-          priority?: string | null
-          status?: string
-          title?: string
-          updated_at?: string
-          vehicle_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "work_orders_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "work_orders_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "work_orders_vehicle_id_fkey"
-            columns: ["vehicle_id"]
-            isOneToOne: false
-            referencedRelation: "vehicles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
+export interface Vehicle {
+  id: string;
+  customer_id: string;
+  make: string;
+  model: string;
+  year: number;
+  license_plate?: string;
+  vin?: string;
+  color?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface User {
+  id: string;
+  user_id: string;
+  email: string;
+  full_name: string;
+  role: 'admin' | 'mechanic';
+  phone?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkOrder {
+  id: string;
+  customer_id: string;
+  vehicle_id: string;
+  assigned_to?: string;
+  title: string;
+  description?: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+  estimated_hours?: number;
+  actual_hours?: number;
+  labor_rate?: number;
+  estimated_completion?: string;
+  completed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Inventory {
+  id: string;
+  name: string;
+  sku: string;
+  description?: string;
+  stock_quantity?: number;
+  min_stock_level?: number;
+  unit_price?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Appointment {
+  id: string;
+  customer_id: string;
+  vehicle_id: string;
+  assigned_to?: string;
+  title: string;
+  description?: string;
+  appointment_date: string;
+  duration_minutes?: number;
+  status?: 'scheduled' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Invoice {
+  id: string;
+  work_order_id: string;
+  customer_id: string;
+  invoice_number: string;
+  subtotal?: number;
+  tax_rate?: number;
+  tax_amount?: number;
+  total_amount?: number;
+  status?: 'draft' | 'sent' | 'paid' | 'overdue' | 'cancelled';
+  issued_date?: string;
+  due_date?: string;
+  paid_date?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
 }

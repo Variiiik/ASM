@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// API client for backend communication
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 class ApiClient {
   private baseURL: string;
@@ -48,18 +49,55 @@ class ApiClient {
     });
     
     this.setToken(response.token);
-    return response;
+    return { data: { user: response.user }, error: null };
   }
 
   async signUp(email: string, password: string, fullName: string, role: string) {
-    return this.request('/auth/signup', {
+    const response = await this.request('/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password, fullName, role }),
     });
+    return { data: response, error: null };
   }
 
   signOut() {
     this.setToken(null);
+    return { error: null };
+  }
+
+  async getUser() {
+    if (!this.token) return { data: { user: null } };
+    
+    try {
+      const response = await this.request<{ user: any }>('/auth/me');
+      return { data: { user: response.user } };
+    } catch (error) {
+      this.setToken(null);
+      return { data: { user: null } };
+    }
+  }
+
+  async getSession() {
+    const { data } = await this.getUser();
+    return { data: { session: data.user ? { user: data.user } : null } };
+  }
+
+  onAuthStateChange(callback: (event: string, session: any) => void) {
+    // Simple implementation - in a real app you'd want more sophisticated state management
+    const checkAuth = async () => {
+      const { data } = await this.getUser();
+      callback(data.user ? 'SIGNED_IN' : 'SIGNED_OUT', data.user ? { user: data.user } : null);
+    };
+    
+    checkAuth();
+    
+    return {
+      data: {
+        subscription: {
+          unsubscribe: () => {}
+        }
+      }
+    };
   }
 
   // Customer endpoints

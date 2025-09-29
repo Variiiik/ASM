@@ -1,17 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase, getCurrentUserProfile } from '../lib/supabase';
-import type { Database } from '../lib/database.types';
+import { apiClient } from '../lib/api';
+import type { User } from '../lib/database.types';
 
-type UserProfile = Database['public']['Tables']['users']['Row'];
-type User = {
+interface AuthUser {
   id: string;
   email: string;
-  profile?: UserProfile;
-};
+  profile?: User;
+}
 
 interface AuthContextType {
-  user: User | null;
-  userProfile: UserProfile | null;
+  user: AuthUser | null;
+  userProfile: User | null;
   loading: boolean;
 }
 
@@ -30,47 +29,33 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [userProfile, setUserProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Get initial session
-    supabase.getSession().then(({ data: { session } }) => {
+    apiClient.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserProfile(session.user);
-      } else {
-        setLoading(false);
+        setUserProfile(session.user.profile || null);
       }
+      setLoading(false);
     });
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = apiClient.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        loadUserProfile(session.user);
+        setUserProfile(session.user.profile || null);
       } else {
         setUserProfile(null);
-        setLoading(false);
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const loadUserProfile = async (user: User) => {
-    try {
-      // User profile is already included in the user object from backend
-      setUserProfile(user.profile || null);
-    } catch (error) {
-      console.error('Error loading user profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <AuthContext.Provider value={{ user, userProfile, loading }}>

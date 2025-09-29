@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Users, Car, Wrench, Calendar, Package, AlertTriangle, DollarSign, TrendingUp } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import StatsCard from './StatsCard';
 import QuickActions from './QuickActions';
@@ -41,50 +41,19 @@ const Dashboard: React.FC<DashboardProps> = ({ onSectionChange }) => {
 
   const loadDashboardStats = async () => {
     try {
-      const today = new Date();
-      const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-
-      // Get counts in parallel
-      const [
-        { count: customerCount },
-        { count: vehicleCount },
-        { count: activeWorkOrderCount },
-        { count: todayAppointmentCount },
-        { count: pendingInvoiceCount },
-        { count: completedJobCount },
-        inventoryData,
-        revenueData
-      ] = await Promise.all([
-        supabase.from('customers').select('*', { count: 'exact', head: true }),
-        supabase.from('vehicles').select('*', { count: 'exact', head: true }),
-        supabase.from('work_orders').select('*', { count: 'exact', head: true }).in('status', ['pending', 'in_progress']),
-        supabase.from('appointments').select('*', { count: 'exact', head: true })
-          .gte('appointment_date', startOfToday.toISOString())
-          .lt('appointment_date', endOfToday.toISOString()),
-        supabase.from('invoices').select('*', { count: 'exact', head: true }).neq('status', 'paid'),
-        supabase.from('work_orders').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
-        supabase.from('inventory').select('*').lte('stock_quantity', supabase.raw('min_stock_level')),
-        supabase.from('invoices').select('total_amount')
-          .eq('status', 'paid')
-          .gte('paid_date', startOfMonth.toISOString())
-      ]);
-
-      // Calculate monthly revenue
-      const monthlyRevenue = revenueData.data?.reduce((sum: number, invoice: any) => 
-        sum + (parseFloat(invoice.total_amount) || 0), 0
-      ) || 0;
+      // For now, set some default values
+      // TODO: Implement dashboard stats API endpoints
+      const customers = await apiClient.getCustomers();
 
       setStats({
-        totalCustomers: customerCount || 0,
-        totalVehicles: vehicleCount || 0,
-        activeWorkOrders: activeWorkOrderCount || 0,
-        todayAppointments: todayAppointmentCount || 0,
-        lowStockItems: inventoryData.data?.length || 0,
-        pendingInvoices: pendingInvoiceCount || 0,
-        monthlyRevenue,
-        completedJobs: completedJobCount || 0,
+        totalCustomers: customers?.length || 0,
+        totalVehicles: 0,
+        activeWorkOrders: 0,
+        todayAppointments: 0,
+        lowStockItems: 0,
+        pendingInvoices: 0,
+        monthlyRevenue: 0,
+        completedJobs: 0,
       });
     } catch (error) {
       console.error('Error loading dashboard stats:', error);

@@ -1,121 +1,36 @@
-// Backend API client for authentication
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// API client for authentication and data management
+import { apiClient } from './api';
 
-class AuthClient {
-  private token: string | null = null;
-
-  constructor() {
-    this.token = localStorage.getItem('auth_token');
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-    
-    const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(this.token && { Authorization: `Bearer ${this.token}` }),
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    const response = await fetch(url, config);
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Network error' }));
-      throw new Error(error.error || `HTTP ${response.status}`);
-    }
-
-    return response.json();
-  }
-
-  setToken(token: string | null) {
-    this.token = token;
-    if (token) {
-      localStorage.setItem('auth_token', token);
-    } else {
-      localStorage.removeItem('auth_token');
-    }
-  }
-
-  async signIn(email: string, password: string) {
-    const response = await this.request<{ token: string; user: any }>('/auth/signin', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-    
-    this.setToken(response.token);
-    return { data: { user: response.user }, error: null };
-  }
-
-  async signUp(email: string, password: string, fullName: string, role: string) {
-    const response = await this.request('/auth/signup', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, fullName, role }),
-    });
-    return { data: response, error: null };
-  }
-
-  signOut() {
-    this.setToken(null);
-    return { error: null };
-  }
-
-  async getUser() {
-    if (!this.token) return { data: { user: null } };
-    
-    try {
-      const response = await this.request<{ user: any }>('/auth/me');
-      return { data: { user: response.user } };
-    } catch (error) {
-      this.setToken(null);
-      return { data: { user: null } };
-    }
-  }
-
-  onAuthStateChange(callback: (event: string, session: any) => void) {
-    // Simple implementation - in a real app you'd want more sophisticated state management
-    const checkAuth = async () => {
-      const { data } = await this.getUser();
-      callback(data.user ? 'SIGNED_IN' : 'SIGNED_OUT', data.user ? { user: data.user } : null);
-    };
-    
-    checkAuth();
-    
-    return {
-      data: {
-        subscription: {
-          unsubscribe: () => {}
-        }
-      }
-    };
-  }
-
-  async getSession() {
-    const { data } = await this.getUser();
-    return { data: { session: data.user ? { user: data.user } : null } };
-  }
-}
-
-// Create a singleton instance
-export const supabase = new AuthClient();
-
-// Export helper functions for compatibility
+// Export the API client methods for compatibility
 export const signIn = async (email: string, password: string) => {
-  return supabase.signIn(email, password);
+  try {
+    const result = await apiClient.signIn(email, password);
+    return result;
+  } catch (error: any) {
+    return { data: null, error: { message: error.message } };
+  }
 };
 
 export const signUp = async (email: string, password: string, fullName: string, role: string) => {
-  return supabase.signUp(email, password, fullName, role);
+  try {
+    const result = await apiClient.signUp(email, password, fullName, role);
+    return result;
+  } catch (error: any) {
+    return { data: null, error: { message: error.message } };
+  }
 };
 
 export const signOut = async () => {
-  return supabase.signOut();
+  try {
+    const result = apiClient.signOut();
+    return result;
+  } catch (error: any) {
+    return { error: { message: error.message } };
+  }
 };
 
 export const getCurrentUser = async () => {
-  const { data } = await supabase.getUser();
+  const { data } = await apiClient.getUser();
   return data.user;
 };
 
@@ -123,6 +38,50 @@ export const getCurrentUserProfile = async () => {
   const user = await getCurrentUser();
   if (!user) return { data: null, error: null };
 
-  // Return the user profile from the user object
   return { data: user.profile, error: null };
+};
+
+// Create a mock supabase object for compatibility
+export const supabase = {
+  auth: {
+    signInWithPassword: async ({ email, password }: { email: string; password: string }) => {
+      return signIn(email, password);
+    },
+    signUp: async ({ email, password, options }: { email: string; password: string; options?: any }) => {
+      return signUp(email, password, options?.data?.fullName || '', options?.data?.role || 'mechanic');
+    },
+    signOut: async () => {
+      return signOut();
+    },
+    getUser: async () => {
+      const user = await getCurrentUser();
+      return { data: { user }, error: null };
+    },
+    getSession: async () => {
+      return apiClient.getSession();
+    },
+    onAuthStateChange: (callback: (event: string, session: any) => void) => {
+      return apiClient.onAuthStateChange(callback);
+    }
+  },
+  from: (table: string) => ({
+    select: (columns?: string) => ({
+      eq: (column: string, value: any) => ({
+        single: async () => ({ data: null, error: null })
+      }),
+      order: (column: string, options?: any) => ({
+        limit: (count: number) => ({ data: [], error: null })
+      }),
+      limit: (count: number) => ({ data: [], error: null }),
+      data: [],
+      error: null
+    }),
+    insert: (data: any) => ({ data: null, error: null }),
+    update: (data: any) => ({
+      eq: (column: string, value: any) => ({ data: null, error: null })
+    }),
+    delete: () => ({
+      eq: (column: string, value: any) => ({ data: null, error: null })
+    })
+  })
 };

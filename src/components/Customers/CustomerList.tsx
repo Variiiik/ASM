@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Search, Phone, Mail, MapPin, Edit2, Car } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { apiClient } from '../../lib/api';
 import CustomerForm from './CustomerForm';
-import type { Database } from '../../lib/database.types';
-
-type Customer = Database['public']['Tables']['customers']['Row'];
-type Vehicle = Database['public']['Tables']['vehicles']['Row'];
+import type { Customer, Vehicle } from '../../lib/database.types';
 
 interface CustomerWithVehicles extends Customer {
   vehicles: Vehicle[];
@@ -24,15 +21,7 @@ const CustomerList: React.FC = () => {
 
   const loadCustomers = async () => {
     try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select(`
-          *,
-          vehicles (*)
-        `)
-        .order('name');
-
-      if (error) throw error;
+      const data = await apiClient.getCustomers();
       setCustomers(data || []);
     } catch (error) {
       console.error('Error loading customers:', error);

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Clock, User, Car, Wrench, Calendar } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
 
 interface Activity {
   id: string;
@@ -21,61 +20,8 @@ const RecentActivity: React.FC = () => {
 
   const loadRecentActivity = async () => {
     try {
-      // Get recent work orders
-      const { data: workOrders } = await supabase
-        .from('work_orders')
-        .select(`
-          id, title, status, created_at,
-          customers (name),
-          vehicles (make, model)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      // Get recent appointments
-      const { data: appointments } = await supabase
-        .from('appointments')
-        .select(`
-          id, title, status, created_at,
-          customers (name),
-          vehicles (make, model)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const activities: Activity[] = [];
-
-      // Add work orders to activities
-      if (workOrders) {
-        workOrders.forEach((wo: any) => {
-          activities.push({
-            id: wo.id,
-            type: 'work_order',
-            title: wo.title,
-            subtitle: `${wo.customers.name} - ${wo.vehicles.make} ${wo.vehicles.model}`,
-            time: formatTimeAgo(wo.created_at),
-            status: wo.status,
-          });
-        });
-      }
-
-      // Add appointments to activities
-      if (appointments) {
-        appointments.forEach((apt: any) => {
-          activities.push({
-            id: apt.id,
-            type: 'appointment',
-            title: apt.title,
-            subtitle: `${apt.customers.name} - ${apt.vehicles.make} ${apt.vehicles.model}`,
-            time: formatTimeAgo(apt.created_at),
-            status: apt.status,
-          });
-        });
-      }
-
-      // Sort by time and take top 10
-      activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-      setActivities(activities.slice(0, 10));
+      // TODO: Implement recent activity API endpoint
+      setActivities([]);
     } catch (error) {
       console.error('Error loading recent activity:', error);
     } finally {

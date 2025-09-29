@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, User, Mail, Phone, MapPin, FileText } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
-import type { Database } from '../../lib/database.types';
-
-type Customer = Database['public']['Tables']['customers']['Row'];
+import { apiClient } from '../../lib/api';
+import type { Customer } from '../../lib/database.types';
 
 interface CustomerFormProps {
   customer?: Customer | null;
@@ -51,19 +49,10 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ customer, onClose, onSucces
     try {
       if (customer) {
         // Update existing customer
-        const { error } = await supabase
-          .from('customers')
-          .update(formData)
-          .eq('id', customer.id);
-
-        if (error) throw error;
+        await apiClient.updateCustomer(customer.id, formData);
       } else {
         // Create new customer
-        const { error } = await supabase
-          .from('customers')
-          .insert([formData]);
-
-        if (error) throw error;
+        await apiClient.createCustomer(formData);
       }
 
       onSuccess();
