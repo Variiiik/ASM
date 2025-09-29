@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "dev:full": "concurrently \"npm run server:dev\" \"npm run dev\"",
-    "dev:full": "concurrently \"npm run server:dev\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -16,12 +15,10 @@
     "server:start": "cd server && npm start",
     "db:migrate": "cd server && npm run db:migrate",
     "db:seed": "cd server && npm run db:seed",
-    "db:setup": "npm run db:migrate && npm run db:seed",
-    "server:dev": "cd server && npm run dev",
-    "server:build": "cd server && npm run build",
-    "server:start": "cd server && npm start"
+    "db:setup": "npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.38.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -32,7 +29,6 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.18",
-    "concurrently": "^9.2.1",
     "concurrently": "^9.2.1",
     "eslint": "^9.9.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
