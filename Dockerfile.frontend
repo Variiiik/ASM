@@ -10,6 +10,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Set build-time environment variables
+ENV VITE_API_URL=http://localhost:3001/api
+ENV VITE_SUPABASE_URL=http://localhost:3001
+ENV VITE_SUPABASE_ANON_KEY=dummy-key-for-docker
+
 # Build the application
 RUN npm run build
 

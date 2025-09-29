@@ -52,9 +52,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_URL=http://localhost:3001/api
+        - VITE_SUPABASE_URL=http://localhost:3001
+        - VITE_SUPABASE_ANON_KEY=dummy-key-for-docker
     container_name: auto_service_frontend
-    environment:
-      VITE_API_URL: http://localhost:3001/api
     ports:
       - "3080:80"
     depends_on:
