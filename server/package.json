@@ -4,11 +4,13 @@
   "description": "Auto Service Management System Backend",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
+    "dev": "ts-node src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "db:migrate": "node dist/scripts/migrate.js",
-    "db:seed": "node dist/scripts/seed.js"
+    "db:migrate": "ts-node src/scripts/migrate.ts",
+    "db:seed": "ts-node src/scripts/seed.ts",
+    "db:migrate:prod": "node dist/scripts/migrate.js",
+    "db:seed:prod": "node dist/scripts/seed.js"
   },
   "dependencies": {
     "express": "^4.18.2",
