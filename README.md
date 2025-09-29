@@ -1,6 +1,6 @@
 # Auto Service Management System
 
-A comprehensive auto service management application built with React, TypeScript, and Supabase. This system helps auto repair shops manage customers, vehicles, work orders, inventory, appointments, and billing.
+A comprehensive auto service management application built with React, TypeScript, Node.js, Express, and PostgreSQL. This system helps auto repair shops manage customers, vehicles, work orders, inventory, appointments, and billing.
 
 ## Features
 
@@ -20,20 +20,21 @@ A comprehensive auto service management application built with React, TypeScript
 - **React 18** with TypeScript
 - **Tailwind CSS** for styling
 - **Lucide React** for icons
-- **Supabase** for authentication and database
 - **Vite** for development and building
 
-### Backend (Database)
-- **Supabase** (PostgreSQL with real-time features)
-- **Row Level Security (RLS)** for data protection
-- **Automatic timestamps** and triggers
+### Backend
+- **Node.js** with Express
+- **TypeScript** for type safety
+- **PostgreSQL** database
+- **JWT** authentication with jose library
+- **bcrypt** for password hashing
 
 ## Quick Start
 
 ### Prerequisites
 
 - Node.js 18+
-- A Supabase account and project
+- PostgreSQL 12+
 
 ### 1. Clone and Install
 
@@ -41,54 +42,68 @@ A comprehensive auto service management application built with React, TypeScript
 git clone <repository-url>
 cd auto-service-management
 npm install
+cd server && npm install && cd ..
 ```
 
-### 2. Supabase Setup
+### 2. Database Setup
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to Settings → API to get your project URL and anon key
-3. Create a `.env` file in the root directory:
-
-```env
-VITE_SUPABASE_URL=your-supabase-project-url
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+1. Create a PostgreSQL database:
+```sql
+CREATE DATABASE auto_service_db;
 ```
 
-### 3. Database Setup
-
-The database migrations are located in `supabase/migrations/`. To apply them:
-
-1. Install the Supabase CLI
-2. Link your project: `supabase link --project-ref your-project-ref`
-3. Push migrations: `supabase db push`
-
-Or manually run the SQL files in your Supabase SQL editor.
-
-### 4. Start Development
-
+2. Copy environment files:
 ```bash
+cp .env.example .env
+cp server/.env.example server/.env
+```
+
+3. Update the database configuration in `server/.env`:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=auto_service_db
+DB_USER=postgres
+DB_PASSWORD=your_password
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+```
+
+4. Run database migrations and seed data:
+```bash
+npm run db:setup
+```
+
+### 3. Start Development
+
+Start both frontend and backend:
+```bash
+npm run dev:full
+```
+
+Or start them separately:
+```bash
+# Terminal 1 - Backend
+npm run server:dev
+
+# Terminal 2 - Frontend  
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The application will be available at:
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:3001`
 
-### 5. Create Your First Admin User
+### 4. Login
 
-After setting up the database, you'll need to create an admin user:
-
-1. Go to your Supabase project → Authentication → Users
-2. Create a new user with email and password
-3. In the SQL editor, run:
-
-```sql
-INSERT INTO users (user_id, email, full_name, role)
-VALUES ('your-user-id-from-auth', 'admin@yourshop.com', 'Admin Name', 'admin');
-```
+Use the seeded demo accounts:
+- **Admin**: admin@autoservice.com / password
+- **Mechanic**: mechanic@autoservice.com / password
 
 ## Database Schema
 
 The system uses the following main tables:
 
+- **`auth_users`** - Authentication credentials
 - **`users`** - User profiles and roles
 - **`customers`** - Customer information
 - **`vehicles`** - Vehicle details linked to customers
@@ -153,48 +168,91 @@ The system uses the following main tables:
 ### Project Structure
 
 ```
-src/
-├── components/          # React components
-│   ├── Auth/           # Authentication components
-│   ├── Dashboard/      # Dashboard widgets
-│   ├── Customers/      # Customer management
-│   └── Layout/         # Layout components
-├── contexts/           # React contexts
-├── lib/               # Utilities and Supabase client
-└── types/             # TypeScript type definitions
+├── src/                    # Frontend React app
+│   ├── components/         # React components
+│   ├── contexts/          # React contexts
+│   ├── lib/               # Utilities and API client
+│   └── types/             # TypeScript type definitions
+├── server/                # Backend Node.js app
+│   ├── src/
+│   │   ├── config/        # Database configuration
+│   │   ├── middleware/    # Express middleware
+│   │   ├── routes/        # API routes
+│   │   └── scripts/       # Database scripts
+│   └── package.json
+└── package.json           # Frontend dependencies
+```
 
-supabase/
-├── migrations/        # Database migrations
-└── config.toml       # Supabase configuration
+### API Endpoints
+
+#### Authentication
+- `POST /api/auth/signin` - User login
+- `POST /api/auth/signup` - Create new user (admin only)
+
+#### Customers
+- `GET /api/customers` - List all customers
+- `POST /api/customers` - Create customer
+- `PUT /api/customers/:id` - Update customer
+- `DELETE /api/customers/:id` - Delete customer
+
+### Database Management
+
+```bash
+# Run migrations
+npm run db:migrate
+
+# Seed sample data
+npm run db:seed
+
+# Reset and setup database
+npm run db:setup
 ```
 
 ### Adding New Features
 
 1. Create database tables in a new migration file
-2. Update TypeScript types in `src/lib/database.types.ts`
-3. Add RLS policies for security
-4. Create React components for the UI
-5. Add navigation items to the sidebar
+2. Add API routes in the server
+3. Create React components for the UI
+4. Add navigation items to the sidebar
+5. Update TypeScript types
 
 ### Security
 
-- All database access is protected by Row Level Security (RLS)
-- JWT-based authentication through Supabase
-- Role-based access control
+- JWT-based authentication
+- Password hashing with bcrypt
+- SQL injection protection with parameterized queries
+- CORS configuration
 - Input validation and sanitization
 
-## Deployment
+## Production Deployment
 
-### Supabase (Recommended)
+### Backend
+1. Set production environment variables
+2. Build the server: `npm run server:build`
+3. Start with: `npm run server:start`
 
-1. Push your database migrations to Supabase
-2. Build the frontend: `npm run build`
-3. Deploy the `dist` folder to any static hosting service
-4. Update your Supabase project's allowed origins
+### Frontend
+1. Update API URL in `.env`
+2. Build: `npm run build`
+3. Serve the `dist` folder with any static hosting service
 
-### Self-hosted
+### Database
+- Use a production PostgreSQL instance
+- Run migrations: `npm run db:migrate`
+- Update connection settings in server `.env`
 
-For self-hosted deployments, you can use the included Docker configuration or deploy to any Node.js hosting service.
+## Docker Deployment
+
+Use the included Docker configuration:
+
+```bash
+docker-compose up -d
+```
+
+This will start:
+- PostgreSQL database
+- Node.js backend
+- Nginx serving the frontend
 
 ## Contributing
 
@@ -212,8 +270,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For support or questions:
 1. Check the GitHub issues
-2. Review the Supabase documentation
-3. Check the application logs for error details
+2. Review the application logs for error details
+3. Check database connectivity
 
 ---
 
