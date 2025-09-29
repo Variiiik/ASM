@@ -16,13 +16,10 @@
     "server:start": "cd server && npm start",
     "db:migrate": "cd server && npm run db:migrate",
     "db:seed": "cd server && npm run db:seed",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:migrate && npm run db:seed",
     "server:dev": "cd server && npm run dev",
     "server:build": "cd server && npm run build",
-    "server:start": "cd server && npm start",
-    "db:migrate": "cd server && npm run db:migrate",
-    "db:seed": "cd server && npm run db:seed",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "server:start": "cd server && npm start"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
